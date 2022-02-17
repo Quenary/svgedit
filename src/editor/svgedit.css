@@ -236,11 +236,11 @@ hr {
   float: left;
 }
 
-#main_button .dropdown {
+/* #main_button .dropdown {
   position: absolute;
   right: 7px;
   top: 4px;
-}
+} */
 
 #main_icon span {
   position: absolute;
@@ -413,7 +413,7 @@ input[type=text] {
   padding: 2px;
 }
 
-.dropdown {
+/* .dropdown {
   position: relative;
 }
 
@@ -477,7 +477,7 @@ input[type=text] {
 
 #font_family_dropdown-list li {
   font-size: 1.4em;
-}
+} */
 
 #font_family {
   margin-left: 5px;
@@ -608,8 +608,8 @@ ul li.current {
 
 /* ------------ */
 
-.dropdown li.tool_button {
+/* .dropdown li.tool_button {
   width: 24px;
-}
+} */
 
 

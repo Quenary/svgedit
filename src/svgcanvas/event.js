@@ -616,7 +616,8 @@ const mouseUpEvent = (evt) => {
               svgCanvas.setCurProperties('stroke_linejoin', selected.getAttribute('stroke-linejoin'))
               svgCanvas.setCurProperties('stroke_linecap', selected.getAttribute('stroke-linecap'))
           }
-          svgCanvas.selectorManager.requestSelector(selected).showGrips(true)
+          const showGrips = svgCanvas.getCurConfig().isElementResizable(selected) // (ASUER)
+          svgCanvas.selectorManager.requestSelector(selected).showGrips(showGrips)
         }
         // always recalculate dimensions to strip off stray identity transforms
         svgCanvas.recalculateAllSelectedDimensions()

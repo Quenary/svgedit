@@ -68,7 +68,7 @@ export const init = canvas => {
  */
 const svgCanvasToString = () => {
   // keep calling it until there are none to remove
-  while (svgCanvas.removeUnusedDefElems() > 0) {} // eslint-disable-line no-empty
+  while (svgCanvas.removeUnusedDefElems() > 0) { } // eslint-disable-line no-empty
 
   svgCanvas.pathActions.clear(true)
 
@@ -168,14 +168,14 @@ const svgToString = (elem, indent) => {
 
       out.push(
         ' width="' +
-          res.w +
-          '" height="' +
-          res.h +
-          '"' +
-          vb +
-          ' xmlns="' +
-          NS.SVG +
-          '"'
+        res.w +
+        '" height="' +
+        res.h +
+        '"' +
+        vb +
+        ' xmlns="' +
+        NS.SVG +
+        '"'
       )
 
       const nsuris = {}
@@ -665,18 +665,20 @@ const importSvgString = (xmlString) => {
         vb[j] = Number(vb[j])
       }
 
-      // TODO: properly handle preserveAspectRatio
-      const // canvasw = +svgContent.getAttribute('width'),
-        canvash = Number(svgCanvas.getSvgContent().getAttribute('height'))
-      // imported content should be 1/3 of the canvas on its largest dimension
+      if (svgCanvas.getCurConfig().scaleImportedSvg) { // (ASUER)
+        // TODO: properly handle preserveAspectRatio
+        const // canvasw = +svgContent.getAttribute('width'),
+          canvash = Number(svgCanvas.getSvgContent().getAttribute('height'))
+        // imported content should be 1/3 of the canvas on its largest dimension
 
-      ts =
-        innerh > innerw
-          ? 'scale(' + canvash / 3 / vb[3] + ')'
-          : 'scale(' + canvash / 3 / vb[2] + ')'
+        ts =
+          innerh > innerw
+            ? 'scale(' + canvash / 3 / vb[3] + ')'
+            : 'scale(' + canvash / 3 / vb[2] + ')'
 
-      // Hack to make recalculateDimensions understand how to scale
-      ts = 'translate(0) ' + ts + ' translate(0)'
+        // Hack to make recalculateDimensions understand how to scale
+        ts = 'translate(0) ' + ts + ' translate(0)'
+      }
 
       symbol = svgCanvas.getDOMDocument().createElementNS(NS.SVG, 'symbol')
       const defs = findDefs()
@@ -716,15 +718,31 @@ const importSvgString = (xmlString) => {
 
     useEl = svgCanvas.getDOMDocument().createElementNS(NS.SVG, 'use')
     useEl.id = svgCanvas.getNextId()
+    // https://stackoverflow.com/questions/63671216/why-is-my-inline-svg-not-displayed-properly-on-safari-desktop-and-mobile
+    // Generated ‘svg’ will always have explicit values for attributes ‘width’ and ‘height’.
+    // If attributes ‘width’ and/or ‘height’ are provided on the ‘use’ element, 
+    // then these attributes will be transferred to the generated ‘svg’. 
+    // If attributes ‘width’ and/or ‘height’ are not specified, the generated ‘svg’ element will use values of '100%' for these attributes.
+    // (fix for Safari)
+    // (ASUER)
+    for (const a of ['width','height','viewBox']) {
+      const sa = symbol.getAttribute(a)
+      if (sa) {
+        useEl.setAttribute(a, sa)
+      }
+    }
+
     svgCanvas.setHref(useEl, '#' + symbol.id)
-    ;(
-      svgCanvas.getCurrentGroup() ||
-      svgCanvas.getCurrentDrawing().getCurrentLayer()
-    ).append(useEl)
+      ; (
+        svgCanvas.getCurrentGroup() ||
+        svgCanvas.getCurrentDrawing().getCurrentLayer()
+      ).append(useEl)
     batchCmd.addSubCommand(new InsertElementCommand(useEl))
     svgCanvas.clearSelection()
 
-    useEl.setAttribute('transform', ts)
+    if (ts) { // (ASUER)
+      useEl.setAttribute('transform', ts);
+    }
     recalculateDimensions(useEl)
     dataStorage.put(useEl, 'symbol', symbol)
     dataStorage.put(useEl, 'ref', symbol)
@@ -1228,14 +1246,14 @@ const convertGradientsMethod = (elem) => {
             (tmpFillStrokeElems[0].tagName === 'linearGradient' ||
               tmpFillStrokeElems[0].tagName === 'radialGradient') &&
             tmpFillStrokeElems[0].getAttribute('gradientUnits') ===
-              'userSpaceOnUse'
+            'userSpaceOnUse'
           ) {
             fillStrokeElems = svgContent.querySelectorAll(
               '[fill="url(#' +
-                tmpFillStrokeElems[0].id +
-                ')"],[stroke="url(#' +
-                tmpFillStrokeElems[0].id +
-                ')"]'
+              tmpFillStrokeElems[0].id +
+              ')"],[stroke="url(#' +
+              tmpFillStrokeElems[0].id +
+              ')"]'
             )
           } else {
             return

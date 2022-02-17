@@ -104,6 +104,8 @@ export default class ConfigObj {
       * @property {boolean} [showGrid=false] Set by `ext-grid.js`; determines whether or not to show the grid by default
       * @property {boolean} [show_outside_canvas=true] Defines whether or not elements outside the canvas should be visible. Set and used in `svgcanvas.js`.
       * @property {boolean} [selectNew=true] If true, will replace the selection with the current element and automatically select element objects (when not in "path" mode) after they are created, showing their grips (v2.6).
+      * @property {boolean} [scaleImportedSvg=true] Resize or not svg on import. (ASUER)
+      * @property {(el: Element) => boolean} [isElementResizable=() => true] A function that determines whether Grips should be shown for sertain element. (ASUER)
       *   Set and used in `svgcanvas.js` (`mouseUp`).
      */
     this.defaultConfig = {
@@ -157,7 +159,9 @@ export default class ConfigObj {
       // EXTENSION (CLIENT VS. SERVER SAVING/OPENING)
       avoidClientSide: false, // Deprecated in favor of `avoidClientSideDownload`
       avoidClientSideDownload: false,
-      avoidClientSideOpen: false
+      avoidClientSideOpen: false,
+      scaleImportedSvg: true, // (ASUER)
+      isElementResizable: () => true // (ASUER)
     }
 
     this.curPrefs = {}
@@ -439,8 +443,10 @@ export default class ConfigObj {
         } else if (cfgCfg.allowInitialUserOverride === true) {
           extendOrAdd(this.defaultConfig, key, val)
         } else if (this.defaultConfig[key] && typeof this.defaultConfig[key] === 'object') {
-          this.curConfig[key] = Array.isArray(this.defaultConfig[key]) ? [] : {}
-          this.curConfig[key] = mergeDeep(this.curConfig[key], val)
+          // fix merge arrays (e. g. .dimentions property causing error) (ASUER)
+          this.curConfig[key] = Array.isArray(this.defaultConfig[key]) && Array.isArray(val)
+            ? [...val]
+            : mergeDeep({}, val);
         } else {
           this.curConfig[key] = val
         }
